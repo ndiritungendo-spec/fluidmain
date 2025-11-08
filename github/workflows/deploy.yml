@@ -1,28 +1,20 @@
-name: Deploy Fld Fluid Token
+name: Deploy FluidToken
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@v3
-
-    - name: Setup Node.js
+    - uses: actions/checkout@v3
+    - name: Setup Node
       uses: actions/setup-node@v3
       with:
-        node-version: '20'
-
-    - name: Install dependencies
-      run: npm install
-
-    - name: Deploy to Polygon
+        node-version: 20
+    - run: npm install
+    - run: npx hardhat run scripts/deploy.js --network rinkeby
       env:
-        PRIVATE_KEY: ${{ secrets.DEPLOYER_PRIVATE_KEY }}
-        POLYGON_RPC_URL: ${{ secrets.POLYGON_RPC_URL }}
-      run: npm run deploy
+        DEPLOYER_PRIVATE_KEY: ${{ secrets.DEPLOYER_PRIVATE_KEY }}
+        INFURA_PROJECT_ID: ${{ secrets.INFURA_PROJECT_ID }}
