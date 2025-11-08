@@ -12,7 +12,7 @@ interface AggregatorV3Interface {
     function decimals() external view returns (uint8);
 }
 
-contract FldFluidToken is ERC20, Ownable {
+contract FluidToken is ERC20, Ownable {
     using SafeERC20 for IERC20;
 
     // ----- Supply -----
@@ -33,14 +33,14 @@ contract FldFluidToken is ERC20, Ownable {
     address public devWallet = 0x4ca465f7b25b630b62b4c36b64dff963f81e27c0;
 
     // ----- Price -----
-    uint256 public lqdPriceUSDT6 = 1e6;
+    uint256 public fldPriceUSDT6 = 1e6;
 
     // ----- Chainlink feeds -----
     mapping(address => AggregatorV3Interface) public priceFeeds;
     AggregatorV3Interface public nativePriceFeed;
 
     // ----- Sale tracking -----
-    uint256 public lqdSold;
+    uint256 public fldSold;
 
     // ----- Airdrop -----
     struct AirdropInfo {
@@ -79,7 +79,7 @@ contract FldFluidToken is ERC20, Ownable {
     event NativeFeedSet(address feed);
     event FoundationWalletUpdated(address newWallet);
     event RelayerWalletUpdated(address newWallet);
-    event SaleExecuted(address indexed buyer, address payToken, uint256 payAmount, uint256 lqdAmount);
+    event SaleExecuted(address indexed buyer, address payToken, uint256 payAmount, uint256 fldAmount);
     event AirdropAllocated(address indexed user, uint256 amount);
     event AirdropClaimed(address indexed user, uint256 amount, uint8 year);
     event AirdropExpired(address indexed user, uint8 year, uint256 slice, address indexed finder, uint256 reward);
@@ -93,7 +93,7 @@ contract FldFluidToken is ERC20, Ownable {
         address _relayerWallet,
         address[] memory _initialSigners,
         uint256 _requiredApprovals
-    ) ERC20("Fld Fluid Token", "FLD") {
+    ) ERC20("Fluid Token", "FLD") {
         require(_foundationWallet != address(0), "invalid foundation wallet");
         require(_relayerWallet != address(0), "invalid relayer wallet");
         require(_initialSigners.length >= _requiredApprovals && _requiredApprovals > 0, "invalid multisig");
@@ -122,9 +122,9 @@ contract FldFluidToken is ERC20, Ownable {
     // =========================
     // ===== Admin / Config ====
     // =========================
-    function setLqdPriceUSDT6(uint256 priceUSDT6) external onlyOwner {
+    function setFldPriceUSDT6(uint256 priceUSDT6) external onlyOwner {
         require(priceUSDT6 > 0, "price>0");
-        lqdPriceUSDT6 = priceUSDT6;
+        fldPriceUSDT6 = priceUSDT6;
         emit PriceUpdated(priceUSDT6);
     }
 
@@ -182,17 +182,17 @@ contract FldFluidToken is ERC20, Ownable {
         try IERC20Metadata(payToken).decimals() returns (uint8 d) { tokenDecimals = d; } catch { tokenDecimals = 18; }  
 
         uint256 usd18 = (saleAmount * uint256(price) * 1e18) / ((10 ** tokenDecimals) * (10 ** aggDecimals));  
-        uint256 lqdAmount = (usd18 * 1e6) / lqdPriceUSDT6;  
-        require(balanceOf(address(this)) >= lqdAmount, "contract lacks LQD");  
-        require(lqdSold + lqdAmount <= SALE_SUPPLY, "sale supply exceeded");  
+        uint256 fldAmount = (usd18 * 1e6) / fldPriceUSDT6;  
+        require(balanceOf(address(this)) >= fldAmount, "contract lacks FLD");  
+        require(fldSold + fldAmount <= SALE_SUPPLY, "sale supply exceeded");  
 
-        _transfer(address(this), msg.sender, lqdAmount);  
-        lqdSold += lqdAmount;  
+        _transfer(address(this), msg.sender, fldAmount);  
+        fldSold += fldAmount;  
 
-        uint256 airdropAlloc = (lqdAmount * AIRDROP_SUPPLY) / SALE_SUPPLY;  
+        uint256 airdropAlloc = (fldAmount * AIRDROP_SUPPLY) / SALE_SUPPLY;  
         if (airdropAlloc > 0) _allocateAirdrop(msg.sender, airdropAlloc);  
 
-        emit SaleExecuted(msg.sender, payToken, payAmount, lqdAmount);  
+        emit SaleExecuted(msg.sender, payToken, payAmount, fldAmount);  
     }
 
     function buyWithNativeAndGas(uint256 gasFee) external payable {
@@ -207,17 +207,17 @@ contract FldFluidToken is ERC20, Ownable {
         require(answer > 0, "invalid feed");
         uint8 aggDecimals = nativePriceFeed.decimals();
         uint256 usd18 = (saleAmount * uint256(answer) * 1e18) / (1e18 * (10 ** aggDecimals));
-        uint256 lqdAmount = (usd18 * 1e6) / lqdPriceUSDT6;
-        require(balanceOf(address(this)) >= lqdAmount, "contract lacks LQD");
-        require(lqdSold + lqdAmount <= SALE_SUPPLY, "sale supply exceeded");
+        uint256 fldAmount = (usd18 * 1e6) / fldPriceUSDT6;
+        require(balanceOf(address(this)) >= fldAmount, "contract lacks FLD");
+        require(fldSold + fldAmount <= SALE_SUPPLY, "sale supply exceeded");
 
-        _transfer(address(this), msg.sender, lqdAmount);
-        lqdSold += lqdAmount;
+        _transfer(address(this), msg.sender, fldAmount);
+        fldSold += fldAmount;
 
-        uint256 airdropAlloc = (lqdAmount * AIRDROP_SUPPLY) / SALE_SUPPLY;
+        uint256 airdropAlloc = (fldAmount * AIRDROP_SUPPLY) / SALE_SUPPLY;
         if(airdropAlloc > 0) _allocateAirdrop(msg.sender, airdropAlloc);
 
-        emit SaleExecuted(msg.sender, address(0), msg.value, lqdAmount);
+        emit SaleExecuted(msg.sender, address(0), msg.value, fldAmount);
     }
 
     // =========================
