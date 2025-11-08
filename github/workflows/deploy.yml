@@ -1,20 +1,32 @@
-name: Deploy FluidToken
+name: Deploy FLD Token
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v3
-    - name: Setup Node
-      uses: actions/setup-node@v3
-      with:
-        node-version: 20
-    - run: npm install
-    - run: npx hardhat run scripts/deploy.js --network rinkeby
-      env:
-        DEPLOYER_PRIVATE_KEY: ${{ secrets.DEPLOYER_PRIVATE_KEY }}
-        INFURA_PROJECT_ID: ${{ secrets.INFURA_PROJECT_ID }}
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Compile contracts
+        run: npx hardhat compile
+
+      - name: Deploy contract
+        env:
+          ALCHEMY_API_URL: ${{ secrets.ALCHEMY_API_URL }}
+          DEPLOYER_PRIVATE_KEY: ${{ secrets.DEPLOYER_PRIVATE_KEY }}
+        run: |
+          npx hardhat run scripts/deploy.js --network polygon
