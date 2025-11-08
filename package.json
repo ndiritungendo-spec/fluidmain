@@ -1,1 +1,18 @@
-
+{
+  "name": "fluid-token",
+  "version": "1.0.0",
+  "description": "Fluid Token (FLD) ERC20 Smart Contract",
+  "scripts": {
+    "compile": "hardhat compile",
+    "deploy": "hardhat run scripts/deploy.js --network rinkeby",
+    "test": "hardhat test"
+  },
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^3.1.0",
+    "@nomiclabs/hardhat-waffle": "^2.0.3",
+    "chai": "^4.3.6",
+    "ethereum-waffle": "^3.4.0",
+    "ethers": "^6.0.0",
+    "hardhat": "^2.17.0"
+  }
+}
